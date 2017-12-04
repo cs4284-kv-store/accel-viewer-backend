@@ -18,12 +18,13 @@ app.use((req, res, next) => {
 })
 
 const server = http.createServer(app);
-const sensor = new WebSocket.Server({ server, path='/sensor' });
-const sensors = new WebSocket.Server({ server, path='/' });
+//const sensor = new WebSocket.Server({ server, path='/sensor' });
+const sensors = new WebSocket.Server({ server, path:'/' });
 
 // A table for which clients each sensor is talking to.
 let sensorTable = {}
 
+/*
 sensor.on('connection', (ws, req) => {
   ws.on('message', message => {
     if(!sensorTable[message]) sensorTable = []
@@ -31,6 +32,7 @@ sensor.on('connection', (ws, req) => {
     sensorTable[message].push(ws)
   })
 })
+*/
 
 
 sensors.on('connection', function connection(ws, req) {
@@ -41,30 +43,13 @@ sensors.on('connection', function connection(ws, req) {
   ws.on('message', function incoming(message) {
     console.log('received: %s', message);
   });
-
 });
 
 function sendToWSClients(data) {
   sensors.clients.forEach(client => {
     if(client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(data))
+      client.send(JSON.stringify({type: 'SENSOR_UPDATE', data}))
     }
-  })
-
-  let id = data.id
-  let toRemove = []
-  sensorTable[id].forEach(client => {
-    if(client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(data))
-    }
-    else if(!client.isAlive) {
-      client.terminate()
-      toRemove.push(client)
-    }
-  }
-
-  sensorTable[message] = sensorTable[message].filter(client => {
-    return toRemove.find(client)
   })
 }
 
