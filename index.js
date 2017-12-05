@@ -46,6 +46,7 @@ sensors.on('connection', function connection(ws, req) {
 });
 
 function sendToWSClients(data) {
+     console.log(data.updated);
   sensors.clients.forEach(client => {
     if(client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({type: 'SENSOR_UPDATE', data}))
@@ -70,12 +71,13 @@ app.post('/:sensorId', (req, res) => {
     ...req.body,
     id
   }
+	console.log(data)
 
   sendToWSClients(data)
 
   res.send(JSON.stringify(data))
 })
 
-server.listen(8080, function listening() {
+server.listen(80, function listening() {
   console.log('Listening on %d', server.address().port);
 });
